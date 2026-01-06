@@ -2,7 +2,7 @@
 
 A **bulletproof**, zero-config Axios interceptor that handles JWT refresh tokens automatically. It solves the race condition problem when multiple requests fail with `401 Unauthorized` simultaneously.
 
-![License](https://img.shields.io/npm/l/axios-auth-refresh-queue)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)
 ![Size](https://img.shields.io/bundlephobia/minzip/axios-auth-refresh-queue)
 
