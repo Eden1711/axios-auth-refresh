@@ -189,4 +189,28 @@ describe("applyAuthTokenInterceptor", () => {
     expect(res.status).toBe(200);
     expect(requestRefreshMock).toHaveBeenCalled(); // Phải gọi refresh dù lỗi là 403
   });
+
+  it("⏩ Should skip refresh logic if skipAuthRefresh is true", async () => {
+    // Setup: Mock API trả về 401
+    mock.onGet("/public").reply(401);
+
+    const requestRefreshMock = vi.fn(); // Mock hàm refresh
+
+    applyAuthTokenInterceptor(client, {
+      requestRefresh: requestRefreshMock, // Hàm này KHÔNG ĐƯỢC PHÉP chạy
+      onSuccess: vi.fn(),
+      onFailure: vi.fn(),
+    });
+
+    //  Gọi API với config skipAuthRefresh: true
+    try {
+      await client.get("/public", { skipAuthRefresh: true });
+    } catch (error: any) {
+      // trả về lỗi 401
+      expect(error.response.status).toBe(401);
+    }
+
+    //  Hàm refresh KHÔNG ĐƯỢC gọi
+    expect(requestRefreshMock).not.toHaveBeenCalled();
+  });
 });

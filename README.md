@@ -188,6 +188,22 @@ applyAuthTokenInterceptor(apiClient, {
 });
 ```
 
+### ⏩ Skipping Auth Refresh
+
+Sometimes you want to ignore specific requests (e.g., Login API, Health Checks) even if they return 401. You can pass `skipAuthRefresh: true` in the request config.
+
+```typescript
+// This request will fail immediately on 401 without triggering refresh flow
+axios.get("/api/public-data", {
+  skipAuthRefresh: true,
+});
+
+// Useful for the Login endpoint itself to prevent infinite loops
+axios.post("/api/login", data, {
+  skipAuthRefresh: true,
+});
+```
+
 ### 🔧 Custom Status Codes
 
 Some backends return `403 Forbidden` instead of `401 Unauthorized` when the token expires. You can customize which status codes trigger the refresh logic:

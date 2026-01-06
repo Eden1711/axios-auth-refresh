@@ -6,6 +6,12 @@ import {
   InternalAxiosRequestConfig,
 } from "axios";
 
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    skipAuthRefresh?: boolean;
+  }
+}
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken?: string;
@@ -77,7 +83,12 @@ export const applyAuthTokenInterceptor = (
     async (error: AxiosError) => {
       const originalRequest = error.config as InternalAxiosRequestConfig & {
         _retry?: boolean;
+        skipAuthRefresh?: boolean;
       };
+
+      if (originalRequest?.skipAuthRefresh) {
+        return Promise.reject(error);
+      }
 
       // Nếu không phải lỗi 401 hoặc request này đã từng retry rồi -> Bỏ qua
       if (
