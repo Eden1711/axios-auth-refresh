@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    /* Cơ bản */
+    "target": "ES2019", // Target JS version (đủ thấp để tương thích nhiều nơi)
+    "module": "ESNext", // Sử dụng ES Modules
+    "lib": ["DOM", "ESNext"], // Hỗ trợ thư viện DOM và JS mới nhất
+    "moduleResolution": "bundler", // Giúp TS tìm thấy axios trong node_modules
+    "esModuleInterop": true, // Hỗ trợ import các module CommonJS (như axios cũ)
+    "allowSyntheticDefaultImports": true,
+
+    /* Build Library configs */
+    "declaration": true, // Tạo file .d.ts
+    "sourceMap": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+
+    /* Output */
+    "outDir": "dist"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}
