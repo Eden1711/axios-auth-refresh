@@ -213,4 +213,33 @@ describe("applyAuthTokenInterceptor", () => {
     //  Hàm refresh KHÔNG ĐƯỢC gọi
     expect(requestRefreshMock).not.toHaveBeenCalled();
   });
+
+  it("🐞 Should log messages when debug is enabled", async () => {
+    // 1. Spy console.log
+    const consoleSpy = vi.spyOn(console, "log");
+
+    // Setup: Mock lỗi 401
+    mock.onGet("/debug").replyOnce(401).onGet("/debug").reply(200);
+    const requestRefreshMock = vi
+      .fn()
+      .mockResolvedValue({ accessToken: "new" });
+
+    applyAuthTokenInterceptor(client, {
+      requestRefresh: requestRefreshMock,
+      onSuccess: vi.fn(),
+      onFailure: vi.fn(),
+      debug: true, // <--- BẬT DEBUG
+    });
+
+    await client.get("/debug");
+
+    // Kiểm tra xem console.log có được gọi
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[Auth-Queue]"),
+      expect.anything() // color style
+    );
+
+    // Dọn dẹp
+    consoleSpy.mockRestore();
+  });
 });

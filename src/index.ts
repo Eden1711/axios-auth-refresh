@@ -40,6 +40,11 @@ export interface AuthInterceptorConfig {
    * @default [401]
    */
   statusCodes?: number[];
+
+  /** * log debug interceptor.
+   * @default false
+   */
+  debug?: boolean;
 }
 
 // Queue lưu các request bị fail để retry sau
@@ -56,6 +61,16 @@ export const applyAuthTokenInterceptor = (
   let failedQueue: FailedRequest[] = [];
 
   const TIMEOUT_MS = config.refreshTimeout || 30000;
+
+  const log = (msg: string, ...args: any[]) => {
+    if (config.debug) {
+      console.log(
+        `%c[Auth-Queue] ${msg}`,
+        "color: #e67e22; font-weight: bold;",
+        ...args
+      );
+    }
+  };
 
   const processQueue = (error: any, token: string | null = null) => {
     failedQueue.forEach((prom) => {
@@ -86,7 +101,14 @@ export const applyAuthTokenInterceptor = (
         skipAuthRefresh?: boolean;
       };
 
+      if (error.response) {
+        log(
+          `🚨 Error ${error.response.status} detected from ${originalRequest?.url}`
+        );
+      }
+
       if (originalRequest?.skipAuthRefresh) {
+        log("⏩ Skipping because skipAuthRefresh is set.");
         return Promise.reject(error);
       }
 
@@ -102,6 +124,7 @@ export const applyAuthTokenInterceptor = (
 
       // Đang có request khác thực hiện refresh token
       if (isRefreshing) {
+        log("⏳ Refresh already in progress. Adding request to queue...");
         return new Promise(function (resolve, reject) {
           failedQueue.push({
             resolve: (token: string) => {
@@ -109,6 +132,7 @@ export const applyAuthTokenInterceptor = (
               const attachToken =
                 config.attachTokenToRequest || defaultAttachToken;
               attachToken(originalRequest, token);
+              log("✅ Replaying queued request:", originalRequest.url);
               resolve(axiosInstance(originalRequest));
             },
             reject: (err) => {
@@ -122,6 +146,7 @@ export const applyAuthTokenInterceptor = (
       isRefreshing = true;
 
       try {
+        log("🔄 Starting refresh token flow...");
         let refreshToken = config.getRefreshToken
           ? config.getRefreshToken()
           : undefined;
@@ -143,6 +168,7 @@ export const applyAuthTokenInterceptor = (
         ]);
 
         // Refresh thành công
+        log("✨ Refresh Successful! Token updated.");
         config.onSuccess(newTokens);
 
         // Cập nhật token
@@ -154,7 +180,8 @@ export const applyAuthTokenInterceptor = (
 
         // Gọi lại request ban đầu
         return axiosInstance(originalRequest);
-      } catch (err) {
+      } catch (err: any) {
+        log("❌ Refresh Failed or Timed out:", err.message);
         // Refresh thất bại
         processQueue(err, null);
         config.onFailure(err);

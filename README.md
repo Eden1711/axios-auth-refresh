@@ -217,13 +217,20 @@ applyAuthTokenInterceptor(apiClient, {
 });
 ```
 
+### 🐞 Debug Mode
+
+If you are having trouble understanding why the interceptor is not working as expected, enable the `debug` mode. It will log helpful messages to the console with the `[Auth-Queue]` prefix.
+
+```typescript
+applyAuthTokenInterceptor(apiClient, {
+  // ...
+  debug: true, // Logs: 🚨 401 Detected -> 🔄 Refreshing -> ✅ Success
+});
+```
+
 ⚙️ API Reference
 `applyAuthTokenInterceptor(axiosInstance, config)`
 | Property | Type | Required | Description | |Data |Data |Data |Data | | `requestRefresh` | (token) => Promise<AuthTokens> | Yes | Your API call logic to get a new token. | | getRefreshToken| () => string | Yes | Function to retrieve the current refresh token from storage. | | onSuccess | (tokens) => void | Yes | Callback invoked when a new token is retrieved successfully. | | onFailure | (error) => void | Yes | Callback invoked when the refresh logic fails (user should be logged out). | | attachTokenToRequest | (req, token) => void | No | Custom function to attach the new token to the retried request headers. |
 
 🤝 Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-```
-
-```
