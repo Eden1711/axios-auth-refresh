@@ -173,7 +173,7 @@ By default, the interceptor waits **30 seconds** for the refresh token API to re
 
 You can customize this duration using `refreshTimeout`:
 
-````typescript
+```typescript
 applyAuthTokenInterceptor(apiClient, {
   // ... other options ...
 
@@ -181,11 +181,12 @@ applyAuthTokenInterceptor(apiClient, {
   refreshTimeout: 10000,
 
   onFailure: (error) => {
-      // Error message will be: "Refresh token timed out after 10000ms"
-      console.error(error.message);
-      window.location.href = '/login';
-  }
+    // Error message will be: "Refresh token timed out after 10000ms"
+    console.error(error.message);
+    window.location.href = "/login";
+  },
 });
+```
 
 ### 🔧 Custom Status Codes
 
@@ -198,7 +199,7 @@ applyAuthTokenInterceptor(apiClient, {
   // Trigger refresh on both 401 and 403
   statusCodes: [401, 403],
 });
-````
+```
 
 ⚙️ API Reference
 `applyAuthTokenInterceptor(axiosInstance, config)`
