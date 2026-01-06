@@ -2,6 +2,11 @@
   "name": "axios-auth-refresh-queue",
   "version": "1.5.0",
   "description": "Bulletproof Axios Interceptor for JWT Refresh Token",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Eden1711/axios-auth-refresh.git"
+  },
+  "homepage": "https://github.com/Eden1711/axios-auth-refresh#readme",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
