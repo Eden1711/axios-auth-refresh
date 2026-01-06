@@ -110,12 +110,12 @@ This is the **recommended** setup for high-security applications to prevent XSS 
 - **Access Token:** Stored in app memory (variables/state) only.
 
 ```typescript
-import axios from 'axios';
-import { applyAuthTokenInterceptor } from 'axios-auth-refresh-queue';
+import axios from "axios";
+import { applyAuthTokenInterceptor } from "axios-auth-refresh-queue";
 
 // 1. MUST enable withCredentials for cookies to work
 const apiClient = axios.create({
-  baseURL: '[https://api.your-backend.com](https://api.your-backend.com)',
+  baseURL: "[https://api.your-backend.com](https://api.your-backend.com)",
   withCredentials: true,
 });
 
@@ -127,9 +127,9 @@ applyAuthTokenInterceptor(apiClient, {
   requestRefresh: async () => {
     // Just call the API. The browser sends the cookie automatically.
     const response = await axios.post(
-        '[https://api.your-backend.com/auth/refresh](https://api.your-backend.com/auth/refresh)',
-        {},
-        { withCredentials: true } // 👈 Important
+      "[https://api.your-backend.com/auth/refresh](https://api.your-backend.com/auth/refresh)",
+      {},
+      { withCredentials: true } // 👈 Important
     );
 
     return {
@@ -140,23 +140,26 @@ applyAuthTokenInterceptor(apiClient, {
 
   // 3. Update Memory & Headers
   onSuccess: (newTokens) => {
-      // ⚠️ Don't store in localStorage
+    // ⚠️ Don't store in localStorage
 
-      // Update default header for future requests
-      apiClient.defaults.headers.common['Authorization'] = `Bearer ${newTokens.accessToken}`;
+    // Update default header for future requests
+    apiClient.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${newTokens.accessToken}`;
 
-      // (Optional) Update your Redux/Zustand state here if needed
-      // store.dispatch(setToken(newTokens.accessToken));
+    // (Optional) Update your Redux/Zustand state here if needed
+    // store.dispatch(setToken(newTokens.accessToken));
   },
 
   onFailure: (error) => {
-      // Call logout to clear cookies on server
-      axios.post('/auth/logout');
-      window.location.href = '/login';
+    // Call logout to clear cookies on server
+    axios.post("/auth/logout");
+    window.location.href = "/login";
   },
 });
 
 export default apiClient;
+```
 
 ⚙️ API Reference
 `applyAuthTokenInterceptor(axiosInstance, config)`
@@ -164,4 +167,3 @@ export default apiClient;
 
 🤝 Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-```
