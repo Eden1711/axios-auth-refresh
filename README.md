@@ -102,9 +102,66 @@ applyAuthTokenInterceptor(apiClient, {
 });
 ```
 
+### 3. 🔥 Advanced: Secure Mode (HttpOnly Cookie & Memory)
+
+This is the **recommended** setup for high-security applications to prevent XSS attacks.
+
+- **Refresh Token:** Stored in an `HttpOnly Cookie` (handled automatically by the browser).
+- **Access Token:** Stored in app memory (variables/state) only.
+
+```typescript
+import axios from 'axios';
+import { applyAuthTokenInterceptor } from 'axios-auth-refresh-queue';
+
+// 1. MUST enable withCredentials for cookies to work
+const apiClient = axios.create({
+  baseURL: '[https://api.your-backend.com](https://api.your-backend.com)',
+  withCredentials: true,
+});
+
+applyAuthTokenInterceptor(apiClient, {
+  // ❌ NO getRefreshToken function needed
+  // (Because the browser handles the cookie automatically)
+
+  // 2. Refresh Logic
+  requestRefresh: async () => {
+    // Just call the API. The browser sends the cookie automatically.
+    const response = await axios.post(
+        '[https://api.your-backend.com/auth/refresh](https://api.your-backend.com/auth/refresh)',
+        {},
+        { withCredentials: true } // 👈 Important
+    );
+
+    return {
+      accessToken: response.data.accessToken,
+      // No need to return refreshToken if it's set via Set-Cookie header
+    };
+  },
+
+  // 3. Update Memory & Headers
+  onSuccess: (newTokens) => {
+      // ⚠️ Don't store in localStorage
+
+      // Update default header for future requests
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${newTokens.accessToken}`;
+
+      // (Optional) Update your Redux/Zustand state here if needed
+      // store.dispatch(setToken(newTokens.accessToken));
+  },
+
+  onFailure: (error) => {
+      // Call logout to clear cookies on server
+      axios.post('/auth/logout');
+      window.location.href = '/login';
+  },
+});
+
+export default apiClient;
+
 ⚙️ API Reference
 `applyAuthTokenInterceptor(axiosInstance, config)`
 | Property | Type | Required | Description | |Data |Data |Data |Data | | `requestRefresh` | (token) => Promise<AuthTokens> | Yes | Your API call logic to get a new token. | | getRefreshToken| () => string | Yes | Function to retrieve the current refresh token from storage. | | onSuccess | (tokens) => void | Yes | Callback invoked when a new token is retrieved successfully. | | onFailure | (error) => void | Yes | Callback invoked when the refresh logic fails (user should be logged out). | | attachTokenToRequest | (req, token) => void | No | Custom function to attach the new token to the retried request headers. |
 
 🤝 Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+```
