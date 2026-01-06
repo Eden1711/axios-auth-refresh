@@ -1,6 +1,6 @@
 {
   "name": "axios-auth-refresh-queue",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Bulletproof Axios Interceptor for JWT Refresh Token",
   "repository": {
     "type": "git",
