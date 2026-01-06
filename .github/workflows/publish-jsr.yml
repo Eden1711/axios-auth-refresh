@@ -19,8 +19,9 @@ jobs:
       # Lệnh này tìm dòng chứa "declare module" đến dấu "}" đóng và xóa nó đi
       - name: Remove Global Types for JSR compatibility
         run: |
-          sed -i '/declare module "axios" {/,/}/d' src/index.ts
-          cat src/index.ts # In ra để kiểm tra xem đã xóa chưa (Optional)
+          perl -i -0pe 's/declare module.*?skipAuthRefresh.*?\}\s*\}//s' src/index.ts
+
+          cat src/index.ts
 
       - name: Publish to JSR
         run: npx jsr publish --allow-slow-types
