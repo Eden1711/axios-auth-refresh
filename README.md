@@ -167,9 +167,30 @@ applyAuthTokenInterceptor(apiClient, {
 export default apiClient;
 ```
 
+### ⏳ Configuration & Timeouts
+
+By default, the interceptor waits **30 seconds** for the refresh token API to respond. If the backend hangs or the network is too slow, the request will fail with a timeout error to prevent the app from being stuck indefinitely.
+
+You can customize this duration using `refreshTimeout`:
+
+```typescript
+applyAuthTokenInterceptor(apiClient, {
+  // ... other options ...
+
+  // ⚡ Fail fast: Abort if refresh takes more than 10 seconds
+  refreshTimeout: 10000,
+
+  onFailure: (error) => {
+      // Error message will be: "Refresh token timed out after 10000ms"
+      console.error(error.message);
+      window.location.href = '/login';
+  }
+});
+
 ⚙️ API Reference
 `applyAuthTokenInterceptor(axiosInstance, config)`
 | Property | Type | Required | Description | |Data |Data |Data |Data | | `requestRefresh` | (token) => Promise<AuthTokens> | Yes | Your API call logic to get a new token. | | getRefreshToken| () => string | Yes | Function to retrieve the current refresh token from storage. | | onSuccess | (tokens) => void | Yes | Callback invoked when a new token is retrieved successfully. | | onFailure | (error) => void | Yes | Callback invoked when the refresh logic fails (user should be logged out). | | attachTokenToRequest | (req, token) => void | No | Custom function to attach the new token to the retried request headers. |
 
 🤝 Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+```

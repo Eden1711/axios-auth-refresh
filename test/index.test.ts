@@ -138,4 +138,32 @@ describe("applyAuthTokenInterceptor", () => {
     // Và không được có header mặc định
     expect(res.config.headers["Authorization"]).toBeUndefined();
   });
+
+  it("⏳ Should fail if refresh takes too long (Timeout)", async () => {
+    // Mock API 401
+    mock.onGet("/slow").reply(401);
+
+    // Mock Refresh Token (500ms)
+    const requestRefreshMock = vi.fn().mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      return { accessToken: "new" };
+    });
+
+    const onFailureMock = vi.fn();
+
+    applyAuthTokenInterceptor(client, {
+      requestRefresh: requestRefreshMock,
+      onSuccess: vi.fn(),
+      onFailure: onFailureMock,
+      refreshTimeout: 100, // Set timeout: 100ms
+    });
+
+    // Gọi API -> Refresh chạy 500ms -> Timeout 100ms cắt ngang
+    await expect(client.get("/slow")).rejects.toThrow(
+      "Refresh token timed out"
+    );
+
+    // onFailure gọi
+    expect(onFailureMock).toHaveBeenCalled();
+  });
 });

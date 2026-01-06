@@ -27,6 +27,8 @@ export interface AuthInterceptorConfig {
     request: InternalAxiosRequestConfig,
     token: string
   ) => void;
+
+  refreshTimeout?: number;
 }
 
 // Queue lưu các request bị fail để retry sau
@@ -41,6 +43,8 @@ export const applyAuthTokenInterceptor = (
 ) => {
   let isRefreshing = false;
   let failedQueue: FailedRequest[] = [];
+
+  const TIMEOUT_MS = config.refreshTimeout || 30000;
 
   const processQueue = (error: any, token: string | null = null) => {
     failedQueue.forEach((prom) => {
@@ -107,8 +111,17 @@ export const applyAuthTokenInterceptor = (
           refreshToken = undefined;
         }
 
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error(`Refresh token timed out after ${TIMEOUT_MS}ms`));
+          }, TIMEOUT_MS);
+        });
+
         //  refresh
-        const newTokens = await config.requestRefresh(refreshToken);
+        const newTokens = await Promise.race([
+          config.requestRefresh(refreshToken),
+          timeoutPromise,
+        ]);
 
         // Refresh thành công
         config.onSuccess(newTokens);
