@@ -1,0 +1,8 @@
+{
+  "name": "@eden1711/axios-auth-refresh-queue",
+  "version": "1.5.2",
+  "exports": "./src/index.ts",
+  "publish": {
+    "exclude": ["!."]
+  }
+}

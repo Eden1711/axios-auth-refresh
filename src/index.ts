@@ -56,7 +56,7 @@ interface FailedRequest {
 export const applyAuthTokenInterceptor = (
   axiosInstance: AxiosInstance,
   config: AuthInterceptorConfig
-) => {
+): void => {
   let isRefreshing = false;
   let failedQueue: FailedRequest[] = [];
 
