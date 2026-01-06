@@ -29,4 +29,4 @@ jobs:
           perl -i -0pe 's/declare module.*?skipAuthRefresh.*?\}\s*\}//s' src/index.ts
 
       - name: Publish to JSR
-        run: npx jsr publish --allow-slow-types
+        run: npx jsr publish --allow-slow-types --allow-dirty
