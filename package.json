@@ -1,6 +1,6 @@
 {
   "name": "axios-auth-refresh-queue",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Bulletproof Axios Interceptor for JWT Refresh Token",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
