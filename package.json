@@ -21,7 +21,7 @@
     "interceptor"
   ],
   "author": "Tai Tran (Eden)",
-  "license": "ISC",
+  "license": "MIT",
   "peerDependencies": {
     "axios": ">=0.19.0"
   },
