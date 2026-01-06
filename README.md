@@ -1,10 +1,14 @@
 # Axios Auth Refresh Queue 🛡️
 
-A **bulletproof**, zero-config Axios interceptor that handles JWT refresh tokens automatically. It solves the race condition problem when multiple requests fail with `401 Unauthorized` simultaneously.
+> 🚀 **Ultra-lightweight (< 1KB)** zero-dependency authentication interceptor for Axios.
+
+> A **bulletproof**, zero-config Axios interceptor that handles JWT refresh tokens automatically. It solves the race condition problem when multiple requests fail with `401 Unauthorized` simultaneously.
 
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)
-![Size](https://img.shields.io/bundlephobia/minzip/axios-auth-refresh-queue)
+[![npm version](https://img.shields.io/npm/v/axios-auth-refresh-queue.svg?style=flat-square)](https://www.npmjs.com/package/axios-auth-refresh-queue)
+[![npm downloads](https://img.shields.io/npm/dm/axios-auth-refresh-queue.svg?style=flat-square)](https://www.npmjs.com/package/axios-auth-refresh-queue)
+[![install size](https://img.shields.io/badge/dynamic/json?url=https://packagephobia.com/v2/api.json?p=axios-auth-refresh-queue&query=$.install.pretty&label=install%20size&style=flat-square)](https://packagephobia.com/result?p=axios-auth-refresh-queue)
 
 ## License
 
