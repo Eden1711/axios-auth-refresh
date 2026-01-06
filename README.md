@@ -26,6 +26,17 @@ When your Access Token expires, your app might fire 5 API requests at once. With
 3.  Calling the "Refresh Token" API **once**.
 4.  Retrying all paused requests with the new token.
 
+## 🌍 Compatibility & Supported Frameworks
+
+Since this library is built on top of **Axios**, it is framework-agnostic and works in any JavaScript/TypeScript environment:
+
+| Platform     | Frameworks                                    | Status             |
+| :----------- | :-------------------------------------------- | :----------------- |
+| **Frontend** | React, Vue, Angular, Svelte, Next.js, Nuxt.js | ✅ Fully Supported |
+| **Backend**  | Node.js (Express, NestJS), Deno, Bun          | ✅ Fully Supported |
+| **Mobile**   | React Native, Expo, Ionic, Capacitor          | ✅ Fully Supported |
+| **Desktop**  | Electron, Tauri                               | ✅ Fully Supported |
+
 ## 📦 Installation
 
 ```bash
