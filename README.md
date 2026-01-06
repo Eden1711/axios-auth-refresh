@@ -6,6 +6,10 @@ A **bulletproof**, zero-config Axios interceptor that handles JWT refresh tokens
 ![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)
 ![Size](https://img.shields.io/bundlephobia/minzip/axios-auth-refresh-queue)
 
+## License
+
+[MIT](./LICENSE)
+
 ## 🚀 Why use this?
 
 When your Access Token expires, your app might fire 5 API requests at once. Without this library, all 5 will fail, leading to 5 separate "Refresh Token" calls (Race Condition) or forcing the user to logout.
