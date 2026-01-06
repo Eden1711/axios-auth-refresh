@@ -1,0 +1,26 @@
+name: Publish to JSR
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 👇 THÊM BƯỚC NÀY: Dùng lệnh sed để xóa đoạn declare module khỏi file src/index.ts
+      # Lệnh này tìm dòng chứa "declare module" đến dấu "}" đóng và xóa nó đi
+      - name: Remove Global Types for JSR compatibility
+        run: |
+          sed -i '/declare module "axios" {/,/}/d' src/index.ts
+          cat src/index.ts # In ra để kiểm tra xem đã xóa chưa (Optional)
+
+      - name: Publish to JSR
+        run: npx jsr publish --allow-slow-types

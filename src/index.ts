@@ -17,9 +17,18 @@ export interface AuthTokens {
   refreshToken?: string;
 }
 
+/**
+ * Configuration options for the Auth Interceptor.
+ */
 export interface AuthInterceptorConfig {
+  /** * The function to call when the token expires.
+   * Should return the new access token (and refresh token if available).
+   */
   requestRefresh: (refreshToken?: string) => Promise<AuthTokens>;
 
+  /**
+   * Function to get the current refresh token from storage.
+   */
   getRefreshToken?: () => string | null | undefined;
 
   /** Callback chạy khi refresh thành công */
@@ -53,6 +62,19 @@ interface FailedRequest {
   reject: (reason?: any) => void;
 }
 
+/**
+ * Applies the authentication interceptor to an Axios instance.
+ * * @param axiosInstance - The Axios instance to intercept.
+ * @param config - Configuration for the interceptor.
+ * * @example
+ * ```ts
+ * applyAuthTokenInterceptor(axios, {
+ * requestRefresh: myRefreshFunction,
+ * onSuccess: (tokens) => saveTokens(tokens),
+ * onFailure: () => logout(),
+ * });
+ * ```
+ */
 export const applyAuthTokenInterceptor = (
   axiosInstance: AxiosInstance,
   config: AuthInterceptorConfig
