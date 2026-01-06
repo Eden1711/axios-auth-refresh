@@ -123,6 +123,8 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
+let accessTokenMemory = null;
+
 applyAuthTokenInterceptor(apiClient, {
   // ❌ NO getRefreshToken function needed
   // (Because the browser handles the cookie automatically)
@@ -145,7 +147,7 @@ applyAuthTokenInterceptor(apiClient, {
   // 3. Update Memory & Headers
   onSuccess: (newTokens) => {
     // ⚠️ Don't store in localStorage
-
+    accessTokenMemory = newTokens.accessToken;
     // Update default header for future requests
     apiClient.defaults.headers.common[
       "Authorization"
