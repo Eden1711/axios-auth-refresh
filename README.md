@@ -50,6 +50,12 @@ const apiClient = axios.create({
 
 // 2. Setup the interceptor
 applyAuthTokenInterceptor(apiClient, {
+  headerTokenHandler: (request) => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      request.headers.Authorization = `Bearer ${token}`;
+    }
+  },
   // Method to get the refresh token from your storage
   // (You can use localStorage, sessionStorage, or cookies here)
   getRefreshToken: () => localStorage.getItem("refresh_token"),

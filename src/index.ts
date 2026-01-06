@@ -43,6 +43,10 @@ export interface AuthInterceptorConfig {
     token: string
   ) => void;
 
+  headerTokenHandler?: (
+    request: InternalAxiosRequestConfig
+  ) => void | Promise<void>;
+
   refreshTimeout?: number;
 
   /** * error code refresh token.
@@ -79,6 +83,16 @@ export const applyAuthTokenInterceptor = (
   axiosInstance: AxiosInstance,
   config: AuthInterceptorConfig
 ): void => {
+  if (config.headerTokenHandler) {
+    axiosInstance.interceptors.request.use(
+      async (requestConfig) => {
+        await config.headerTokenHandler!(requestConfig);
+        return requestConfig;
+      },
+      (error) => Promise.reject(error)
+    );
+  }
+
   let isRefreshing = false;
   let failedQueue: FailedRequest[] = [];
 
