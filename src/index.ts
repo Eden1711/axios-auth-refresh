@@ -6,11 +6,11 @@ import {
   InternalAxiosRequestConfig,
 } from "axios";
 
-declare module "axios" {
-  export interface AxiosRequestConfig {
-    skipAuthRefresh?: boolean;
-  }
-}
+// declare module "axios" {
+//   export interface AxiosRequestConfig {
+//     skipAuthRefresh?: boolean;
+//   }
+// }
 
 export interface AuthTokens {
   accessToken: string;
