@@ -173,7 +173,7 @@ By default, the interceptor waits **30 seconds** for the refresh token API to re
 
 You can customize this duration using `refreshTimeout`:
 
-```typescript
+````typescript
 applyAuthTokenInterceptor(apiClient, {
   // ... other options ...
 
@@ -187,10 +187,26 @@ applyAuthTokenInterceptor(apiClient, {
   }
 });
 
+### 🔧 Custom Status Codes
+
+Some backends return `403 Forbidden` instead of `401 Unauthorized` when the token expires. You can customize which status codes trigger the refresh logic:
+
+```typescript
+applyAuthTokenInterceptor(apiClient, {
+  // ... other options
+
+  // Trigger refresh on both 401 and 403
+  statusCodes: [401, 403],
+});
+````
+
 ⚙️ API Reference
 `applyAuthTokenInterceptor(axiosInstance, config)`
 | Property | Type | Required | Description | |Data |Data |Data |Data | | `requestRefresh` | (token) => Promise<AuthTokens> | Yes | Your API call logic to get a new token. | | getRefreshToken| () => string | Yes | Function to retrieve the current refresh token from storage. | | onSuccess | (tokens) => void | Yes | Callback invoked when a new token is retrieved successfully. | | onFailure | (error) => void | Yes | Callback invoked when the refresh logic fails (user should be logged out). | | attachTokenToRequest | (req, token) => void | No | Custom function to attach the new token to the retried request headers. |
 
 🤝 Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+```
+
 ```

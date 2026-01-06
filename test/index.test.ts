@@ -166,4 +166,27 @@ describe("applyAuthTokenInterceptor", () => {
     // onFailure gọi
     expect(onFailureMock).toHaveBeenCalled();
   });
+
+  it("🛡️ Should handle custom status codes (e.g. 403 Forbidden)", async () => {
+    // Setup: Mock API trả về 403
+    mock.onGet("/admin").replyOnce(403).onGet("/admin").reply(200, "success");
+
+    const requestRefreshMock = vi
+      .fn()
+      .mockResolvedValue({ accessToken: "new-token" });
+
+    applyAuthTokenInterceptor(client, {
+      requestRefresh: requestRefreshMock,
+      onSuccess: vi.fn(),
+      onFailure: vi.fn(),
+      statusCodes: [401, 403], // <--- Config 403
+    });
+
+    // Execute
+    const res = await client.get("/admin");
+
+    // Verify
+    expect(res.status).toBe(200);
+    expect(requestRefreshMock).toHaveBeenCalled(); // Phải gọi refresh dù lỗi là 403
+  });
 });

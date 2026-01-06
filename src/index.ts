@@ -29,6 +29,11 @@ export interface AuthInterceptorConfig {
   ) => void;
 
   refreshTimeout?: number;
+
+  /** * error code refresh token.
+   * @default [401]
+   */
+  statusCodes?: number[];
 }
 
 // Queue lưu các request bị fail để retry sau
@@ -65,6 +70,8 @@ export const applyAuthTokenInterceptor = (
     request.headers.set("Authorization", `Bearer ${token}`);
   };
 
+  const statusCodes = config.statusCodes || [401];
+
   axiosInstance.interceptors.response.use(
     (response: AxiosResponse) => response,
     async (error: AxiosError) => {
@@ -74,7 +81,8 @@ export const applyAuthTokenInterceptor = (
 
       // Nếu không phải lỗi 401 hoặc request này đã từng retry rồi -> Bỏ qua
       if (
-        error.response?.status !== 401 ||
+        !error.response ||
+        !statusCodes.includes(error.response.status) ||
         !originalRequest ||
         originalRequest._retry
       ) {
