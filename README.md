@@ -9,6 +9,7 @@
 [![npm version](https://img.shields.io/npm/v/axios-auth-refresh-queue.svg?style=flat-square)](https://www.npmjs.com/package/axios-auth-refresh-queue)
 [![npm downloads](https://img.shields.io/npm/dm/axios-auth-refresh-queue.svg?style=flat-square)](https://www.npmjs.com/package/axios-auth-refresh-queue)
 [![install size](https://img.shields.io/badge/dynamic/json?url=https://packagephobia.com/v2/api.json?p=axios-auth-refresh-queue&query=$.install.pretty&label=install%20size&style=flat-square)](https://packagephobia.com/result?p=axios-auth-refresh-queue)
+[![JSR](https://jsr.io/badges/@eden1711/axios-auth-refresh-queue)](https://jsr.io/@eden1711/axios-auth-refresh-queue)
 
 ## License
 
