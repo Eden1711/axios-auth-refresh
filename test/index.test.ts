@@ -4,6 +4,22 @@ import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import { applyAuthTokenInterceptor } from "../src/index";
 
+const mockLocksRequest = vi.fn(async (_name, callback) => {
+  // Giả lập trình duyệt cấp khóa ngay lập tức và chạy callback
+  return await callback();
+});
+
+// Hack vào global object để giả lập navigator.locks
+Object.defineProperty(global, "navigator", {
+  value: {
+    ...global.navigator,
+    locks: { request: mockLocksRequest },
+    userAgent: "node", // Giữ nguyên để không ảnh hưởng logic khác
+  },
+  writable: true,
+  configurable: true,
+});
+
 describe("applyAuthTokenInterceptor", () => {
   let client: any;
   let mock: MockAdapter;
@@ -241,5 +257,79 @@ describe("applyAuthTokenInterceptor", () => {
 
     // Dọn dẹp
     consoleSpy.mockRestore();
+  });
+
+  it("🔒 [v2.0] Should use Web Locks API to prevent race conditions", async () => {
+    // Test xem có thực sự gọi navigator.locks.request không
+    mock.onGet("/lock-test").replyOnce(401).onGet("/lock-test").reply(200);
+
+    const requestRefreshMock = vi
+      .fn()
+      .mockResolvedValue({ accessToken: "new" });
+
+    applyAuthTokenInterceptor(client, {
+      requestRefresh: requestRefreshMock,
+      onSuccess: vi.fn(),
+      onFailure: vi.fn(),
+    });
+
+    await client.get("/lock-test");
+
+    // @ts-ignore
+    expect(navigator.locks.request).toHaveBeenCalledWith(
+      "axios-auth-refresh-lock",
+      expect.any(Function)
+    );
+    expect(requestRefreshMock).toHaveBeenCalled();
+  });
+
+  it("✨ [v2.0] Should SKIP refresh if checkTokenIsValid returns a valid token", async () => {
+    // Kịch bản: Tab A đã refresh xong, checkTokenIsValid trả về token mới luôn.
+    mock.onGet("/cross-tab").replyOnce(401).onGet("/cross-tab").reply(200);
+
+    const requestRefreshMock = vi.fn(); // ❌ KHÔNG ĐƯỢC GỌI
+    const checkTokenIsValidMock = vi.fn().mockResolvedValue("TOKEN_FROM_TAB_A");
+
+    applyAuthTokenInterceptor(client, {
+      requestRefresh: requestRefreshMock,
+      onSuccess: vi.fn(),
+      onFailure: vi.fn(),
+      checkTokenIsValid: checkTokenIsValidMock,
+    });
+
+    const res = await client.get("/cross-tab");
+
+    // 1. Phải check
+    expect(checkTokenIsValidMock).toHaveBeenCalled();
+    // 2. Không được refresh lại
+    expect(requestRefreshMock).not.toHaveBeenCalled();
+    // 3. Request retry phải dùng token lấy từ checkTokenIsValid
+    expect(res.config.headers["Authorization"]).toBe("Bearer TOKEN_FROM_TAB_A");
+  });
+
+  it("🔄 [v2.0] Should PROCEED with refresh if checkTokenIsValid returns null/false", async () => {
+    // Kịch bản: Check thấy token vẫn cũ -> Phải tự refresh
+    mock
+      .onGet("/cross-tab-fail")
+      .replyOnce(401)
+      .onGet("/cross-tab-fail")
+      .reply(200);
+
+    const requestRefreshMock = vi
+      .fn()
+      .mockResolvedValue({ accessToken: "fresh-token" });
+    const checkTokenIsValidMock = vi.fn().mockResolvedValue(null);
+
+    applyAuthTokenInterceptor(client, {
+      requestRefresh: requestRefreshMock,
+      onSuccess: vi.fn(),
+      onFailure: vi.fn(),
+      checkTokenIsValid: checkTokenIsValidMock,
+    });
+
+    await client.get("/cross-tab-fail");
+
+    // Phải gọi refresh vì check failed
+    expect(requestRefreshMock).toHaveBeenCalledTimes(1);
   });
 });

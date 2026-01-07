@@ -189,6 +189,48 @@ applyAuthTokenInterceptor(apiClient, {
 export default apiClient;
 ```
 
+### 4. 🔒 Cross-Tab Synchronization (New in v2.0)
+
+In a multi-tab environment, you don't want Tab A and Tab B to both refresh the token at the same time. This causes Race Conditions, especially if your backend uses Refresh Token Rotation (where a refresh token can only be used once).
+
+How it works:
+
+1. Tab A detects 401, acquires a Browser Lock, and starts refreshing.
+
+2. Tab B detects 401, sees the lock is taken, and waits.
+
+3. Tab A finishes, saves the new token to LocalStorage, and releases the lock.
+
+4. Tab B wakes up, checks if the token in LocalStorage is valid (using checkTokenIsValid), and reuses it immediately without calling the API.
+
+Setup:
+
+You simply need to provide the `checkTokenIsValid` callback.
+
+```typescript
+import { jwtDecode } from "jwt-decode"; // Optional: helper library
+
+applyAuthTokenInterceptor(apiClient, {
+  // ... other configs ...
+
+  // ✅ REQUIRED for Cross-Tab Sync
+  // This function runs when a tab wakes up from waiting.
+  // Return the valid token string if found, otherwise return null/false.
+  checkTokenIsValid: async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return null;
+
+    // Example: Check if token is not expired
+    const decoded = jwtDecode(token);
+    if (decoded.exp * 1000 > Date.now()) {
+      return token; // Token is fresh! Use it immediately.
+    }
+
+    return null; // Token is old, proceed to refresh.
+  },
+});
+```
+
 ### ⏳ Configuration & Timeouts
 
 By default, the interceptor waits **30 seconds** for the refresh token API to respond. If the backend hangs or the network is too slow, the request will fail with a timeout error to prevent the app from being stuck indefinitely.
@@ -252,7 +294,19 @@ applyAuthTokenInterceptor(apiClient, {
 
 ⚙️ API Reference
 `applyAuthTokenInterceptor(axiosInstance, config)`
-| Property | Type | Required | Description | |Data |Data |Data |Data | | `requestRefresh` | (token) => Promise<AuthTokens> | Yes | Your API call logic to get a new token. | | getRefreshToken| () => string | Yes | Function to retrieve the current refresh token from storage. | | onSuccess | (tokens) => void | Yes | Callback invoked when a new token is retrieved successfully. | | onFailure | (error) => void | Yes | Callback invoked when the refresh logic fails (user should be logged out). | | attachTokenToRequest | (req, token) => void | No | Custom function to attach the new token to the retried request headers. |
+
+| Option                   | Type                                | Required | Description                                                                                                          |
+| :----------------------- | :---------------------------------- | :------- | :------------------------------------------------------------------------------------------------------------------- |
+| **requestRefresh**       | `(token) => Promise<AuthTokens>`    | ✅       | Core logic. Calls your backend to refresh tokens and **must return `AuthTokens`**.                                   |
+| **onSuccess**            | `(tokens) => void`                  | ✅       | Triggered when token refresh succeeds. Use this to persist new tokens.                                               |
+| **onFailure**            | `(error) => void`                   | ✅       | Triggered when token refresh fails. Use this to log out the user.                                                    |
+| **getRefreshToken**      | `() => string`                      | ❌       | Retrieves the refresh token from storage before calling `requestRefresh`.                                            |
+| **checkTokenIsValid**    | `() => Promise<boolean>`            | ❌       | 🔒 **v2.0+** Required for **cross-tab sync**. Checks if a valid token already exists before refreshing.              |
+| **headerTokenHandler**   | `(config) => void \| Promise<void>` | ❌       | Async hook to attach the token to the request headers before each request.                                           |
+| **attachTokenToRequest** | `(config, token) => void`           | ❌       | Custom logic to attach the refreshed token to the retried request. <br/>**Default:** `Authorization: Bearer {token}` |
+| **statusCodes**          | `number[]`                          | ❌       | HTTP status codes that trigger the refresh flow. <br/>**Default:** `[401]`                                           |
+| **refreshTimeout**       | `number`                            | ❌       | Maximum time (ms) to wait for the refresh request. <br/>**Default:** `30000`                                         |
+| **debug**                | `boolean`                           | ❌       | Enables colorful debug logs in the console. <br/>**Default:** `false`                                                |
 
 🤝 Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
