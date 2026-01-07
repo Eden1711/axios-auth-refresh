@@ -139,49 +139,48 @@ This is the **recommended** setup for high-security applications to prevent XSS 
 import axios from "axios";
 import { applyAuthTokenInterceptor } from "axios-auth-refresh-queue";
 
-// 1. MUST enable withCredentials for cookies to work
+// 1. Create instance with credentials for cookie support
 const apiClient = axios.create({
-  baseURL: "[https://api.your-backend.com](https://api.your-backend.com)",
+  baseURL: "https://api.your-backend.com",
   withCredentials: true,
 });
 
-let accessTokenMemory = null;
+// Your in-memory store (could be a simple variable, Redux, or Zustand)
+let accessTokenMemory: string | null = null;
 
 applyAuthTokenInterceptor(apiClient, {
-  // ❌ NO getRefreshToken function needed
-  // (Because the browser handles the cookie automatically)
+  // 🟢 Dynamically attach the token from memory before EVERY request
+  headerTokenHandler: (config) => {
+    if (accessTokenMemory) {
+      config.headers.set("Authorization", `Bearer ${accessTokenMemory}`);
+    }
+  },
 
-  // 2. Refresh Logic
+  // 🟢 Refresh Logic: Browser sends the HttpOnly cookie automatically
   requestRefresh: async () => {
-    // Just call the API. The browser sends the cookie automatically.
     const response = await axios.post(
-      "[https://api.your-backend.com/auth/refresh](https://api.your-backend.com/auth/refresh)",
+      "https://api.your-backend.com/auth/refresh",
       {},
-      { withCredentials: true } // 👈 Important
+      { withCredentials: true }
     );
 
     return {
       accessToken: response.data.accessToken,
-      // No need to return refreshToken if it's set via Set-Cookie header
+      // No need to return refreshToken if it's managed via Set-Cookie header
     };
   },
 
-  // 3. Update Memory & Headers
+  // 🟢 Update Memory when refresh succeeds
   onSuccess: (newTokens) => {
-    // ⚠️ Don't store in localStorage
     accessTokenMemory = newTokens.accessToken;
-    // Update default header for future requests
-    apiClient.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${newTokens.accessToken}`;
 
-    // (Optional) Update your Redux/Zustand state here if needed
+    // Optional: If using Redux/Zustand
     // store.dispatch(setToken(newTokens.accessToken));
   },
 
   onFailure: (error) => {
-    // Call logout to clear cookies on server
-    axios.post("/auth/logout");
+    console.error("Session expired");
+    accessTokenMemory = null;
     window.location.href = "/login";
   },
 });
