@@ -20,7 +20,6 @@
 When your Access Token expires, your app might fire 5 API requests at once. Without this library, all 5 will fail, leading to 5 separate "Refresh Token" calls (Race Condition) or forcing the user to logout.
 
 **Why this library instead of axios-auth-refresh?**
-
 **This library fixes it by:**
 
 1.  Intercepting the first `401` error.
