@@ -31,21 +31,20 @@ export interface AuthInterceptorConfig {
    */
   getRefreshToken?: () => string | null | undefined;
 
-  /** Callback chạy khi refresh thành công */
+  /** Callback when refresh success */
   onSuccess: (tokens: AuthTokens) => void;
 
-  /** Callback chạy khi refresh thất bại  */
+  /** Callback when refresh fail  */
   onFailure: (error: any) => void;
 
-  /**  Tự custom cách gắn token vào header. Mặc định là 'Authorization: Bearer ...' */
+  /**  Custom headers */
   attachTokenToRequest?: (
     request: InternalAxiosRequestConfig,
     token: string
   ) => void;
 
   /**
-   * Handler chạy trước mọi request.
-   * Dùng để tự động gắn Access Token vào header từ localStorage/Store.
+   * Put Access Token into header from localStorage or store.
    */
   headerTokenHandler?: (
     request: InternalAxiosRequestConfig
@@ -77,7 +76,7 @@ export interface AuthInterceptorConfig {
     | false;
 }
 
-// Queue lưu các request bị fail để retry sau
+// Queue save requests fail to retry
 interface FailedRequest {
   resolve: (value: any) => void;
   reject: (reason?: any) => void;
@@ -129,7 +128,7 @@ export const applyAuthTokenInterceptor = (
     }
   };
 
-  // Hàm mặc định để gắn token nếu user không truyền attachTokenToRequest
+  // default headers
   const defaultAttachToken = (
     request: InternalAxiosRequestConfig,
     token: string
@@ -174,7 +173,6 @@ export const applyAuthTokenInterceptor = (
         return Promise.reject(error);
       }
 
-      // Nếu không phải lỗi 401 hoặc request này đã từng retry rồi -> Bỏ qua
       if (
         !error.response ||
         !statusCodes.includes(error.response.status) ||
@@ -185,7 +183,7 @@ export const applyAuthTokenInterceptor = (
         return Promise.reject(error);
       }
 
-      // Đang có request khác thực hiện refresh token
+      // Another request is currently performing a token refresh.
       if (isRefreshing) {
         log("⏳ Refresh already in progress (Local). Adding to queue...");
         return new Promise((resolve, reject) => {
